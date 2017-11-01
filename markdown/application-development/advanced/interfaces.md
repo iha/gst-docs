@@ -4,61 +4,85 @@ title: Interfaces
 
 # Interfaces
 
-In [Using an element as a GObject][element-object], you have
-learned how to use `GObject` properties as a simple way to do
-interaction between applications and elements. This method suffices for
-the simple'n'straight settings, but fails for anything more complicated
-than a getter and setter. For the more complicated use cases, GStreamer
-uses interfaces based on the GObject
+[Using an element as a GObject][element-object] presents the use of `GObject`
+properties as a simple way for applications and elements to interact. This
+method suffices for simple getters and setters, but fails for anything more
+complicated. For more complex use cases, GStreamer uses interfaces based on the
+`GObject`
 [`GTypeInterface`](http://library.gnome.org/devel/gobject/stable/gtype-non-instantiable-classed.html)
 type.
 
-Most of the interfaces handled here will not contain any example code.
-See the API references for details. Here, we will just describe the
-scope and purpose of each interface.
+This text is meant to be introductory and does not include source code examples.
+Please take a look a the API reference for additional details.
 
 [element-object]: application-development/basics/elements.md#using-an-element-as-a-gobject
 
-## The URI interface
+## The URI Handler interface
 
-In all examples so far, we have only supported local files through the
-“filesrc” element. GStreamer, obviously, supports many more location
-sources. However, we don't want applications to need to know any
-particular element implementation details, such as element names for
-particular network source types and so on. Therefore, there is a URI
-interface, which can be used to get the source element that supports a
-particular URI type. There is no strict rule for URI naming, but in
-general we follow naming conventions that others use, too. For example,
-assuming you have the correct plugins installed, GStreamer supports
-“file:///\<path\>/\<file\>”, “http://\<host\>/\<path\>/\<file\>”,
-“mms://\<host\>/\<path\>/\<file\>”, and so on.
+In our examples so far, we have only showed support for local files
+using the “filesrc” element, but GStreamer supports many more location
+sources.
+
+GStreamer doesn't require applications to know any `URI` specifics, like
+what element to use for a particular network source types. These details
+are abstracted by the `GstURIHandler` interface.
+
+There is no strict rule for `URI` naming, but in general, we follow
+common-usage naming conventions. For example, assuming you have the
+correct plugins installed, GStreamer supports:
+
+```
+file:///<path>/<file>
+http://<host>/<path>/<file>
+mms://<host>/<path>/<file>
+dvb://<CHANNEL>
+...
+```
 
 In order to get the source or sink element supporting a particular URI,
-use `gst_element_make_from_uri ()`, with the URI type being either
-`GST_URI_SRC` for a source element, or `GST_URI_SINK` for a sink
-element.
+use `gst_element_make_from_uri ()` with `GST_URI_SRC` or `GST_URI_SINK`
+as `GstURIType` depending in the direction you need.
 
 You can convert filenames to and from URIs using GLib's
 `g_filename_to_uri ()` and `g_uri_to_filename ()`.
 
 ## The Color Balance interface
 
-The colorbalance interface is a way to control video-related properties
+The `GstColorBalance` interface is a way to control video-related properties
 on an element, such as brightness, contrast and so on. It's sole reason
 for existence is that, as far as its authors know, there's no way to
 dynamically register properties using `GObject`.
 
 The colorbalance interface is implemented by several plugins, including
-xvimagesink and the Video4linux2 elements.
+`xvimagesink`, `glimagesink` and the `Video4linux2` elements.
 
 ## The Video Overlay interface
 
-The Video Overlay interface was created to solve the problem of
+The `GstVideoOverlay` interface was created to solve the problem of
 embedding video streams in an application window. The application
-provides an window handle to the element implementing this interface to
-draw on, and the element will then use this window handle to draw on
+provides a window handle to an element implementing this interface,
+and the element will then use this window handle to draw on
 rather than creating a new toplevel window. This is useful to embed
 video in video players.
 
-This interface is implemented by, amongst others, the Video4linux2
-elements and by ximagesink, xvimagesink and sdlvideosink.
+This interface is implemented by, amongst others, the `Video4linux2`
+elements and by `glimagesink`, `ximagesink`, `xvimagesink` and `sdlvideosink`.
+
+## Other interfaces
+
+There are quite a few other interfaces provided by GStreamer and implemented by
+some of its elements. Among them:
+
+* `GstChildProxy` For access to internal element's properties on multi-child elements
+* `GstNavigation` For the sending and parsing of navigation events
+* `GstPreset` For handling element presets
+* `GstRTSPExtension` An RTSP Extension interface
+* `GstStreamVolume` Interface to provide access and control stream volume levels
+* `GstTagSetter` For handling media metadata
+* `GstTagXmpWriter` For elements that provide XMP serialization
+* `GstTocSetter` For setting and retrieval of TOC-like data
+* `GstTuner` For elements providing RF tunning operations
+* `GstVideoDirection` For video rotation and flipping controls
+* `GstVideoOrientation` For video orientation controls
+* `GstWaylandVideo` Wayland video interface
+

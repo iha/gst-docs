@@ -41,22 +41,84 @@ This will create an initial recipe file in `recipes/my-app.recipe`,
 which contains the smallest necessary recipe. This file is a Python
 script; set the following attributes to describe your application:
 
-| Attribute Name | Description | Required | Example |
-|----------------|-------------|----------|---------|
-| `name` | The recipe name.    | Yes      | *name = 'my-app'* |
-| `version` | The software version. | Yes | *version = '1.0'* |
-| `licenses` | A list of licenses of the software (see `cerbero/enums.py:License` for allowed licenses). | Yes | *licenses = \[License.LGPLv2Plus\]* |
-| `deps` | A list of build dependencies of the software as recipe names. | No | *deps = \['other', 'recipe', 'names'\]* |
-| `platform_deps` | Platform specific build dependencies (see `cerbero/enums.py:Platform` for allowed platforms). | No | *platform\_deps = {Platform.LINUX: \['some-recipe'\], Platform.WINDOWS: \['another-recipe'\]}* |
-| `remotes` | A dictionary specifying the git remote urls where sources are pulled from. | No | *remotes = {'origin': '<git://somewhere>'}* |
-| `commit` | The git commit, tag or branch to use, defaulting to "sdk-*`version`*"*.* | No | *commit = 'my-app-branch'* |
-| `config_sh` | Used to select the configuration script. | No | *config\_sh = 'autoreconf -fiv && sh ./configure'* |
-| `configure_options` | Additional options that should be passed to the `configure` script. | No | *configure\_options = '--enable-something'* |
-| `use_system_libs` | Whether to use system provided libs. | No | *use\_system\_libs = True* |
-| `btype` | The build type (see `cerbero/build/build.py:BuildType` for allowed build types). | No | *btype = BuildType.CUSTOM* |
-| `stype` | The source type (see `cerbero/build/source.py:SourceType` for allowed source types). | No | *stype = SourceType.CUSTOM* |
-| `files_category` | A list of files that should be shipped with packages including this recipe *category*. See below for more details. Cerbero comes with some predefined categories that should be used if the files being installed match a category criteria. The predefined categories are: `libs` (for libraries), `bins` (for binaries), `devel` (for development files - header, pkgconfig files, etc), `python` (for python files) and `lang` (for language files). *Note that for the `bins` and `libs` categories there is no need to specify the files extensions as Cerbero will do it for you.* | Yes\* | *files\_bins = \['some-binary'\]*  *files\_libs = \['libsomelib'\]* *files\_devel = \['include/something'\] files\_python = \['site-packages/some/pythonfile%(pext)s'\]* *files\_lang = \['foo'\]* |
-| `platform_files_category` | Same as *`files_category`* but for platform specific files. | No  | *platform\_files\_some\_category = {Platform.LINUX: \['/some/file'\]}* |
+```
++-------------------+-----------------------+----------+----------------------+
+| Attribute Name    | Description           | Required | Example              |
+|-------------------|-----------------------|----------|----------------------|
+| name              | The recipe name       | Yes      | name = 'my-app'      |
+|                   |                       |          |                      |
+| version           | The software version  | Yes      | version = '1.0'      |
+|                   |                       |          |                      |
+| licenses          | A list of licenses of | Yes      | licenses =           |
+|                   | the software [1]      |          | [License.LGPLv2Plus] |
+|                   |                       |          |                      |
+| deps              | A list of build       | No       | deps = ['other',     |
+|                   | dependencies of the   |          | 'recipe', 'names']   |
+|                   | software as recipe    |          |                      |
+|                   | names.                |          |                      |
+|                   |                       |          |                      |
+| platform_deps     | Platform specific     | No       | platform_deps =      |
+|                   | build dependencies    |          | {Platform.LINUX:     |
+|                   |                       |          | ['some-recipe'],     |
+|                   |                       |          | Platform.WINDOWS:    |
+|                   |                       |          | ['another-recipe']}  |
+|                   |                       |          |                      |
+| remotes           | Dictionary specifying | No       | remotes = {'origin': |
+|                   | the git remote URLs   |          | '<git://somewhere>'} |
+|                   | where sources are     |          |                      |
+|                   | pulled from           |          |                      |
+|                   |                       |          |                      |
+| commit            | The git commit, tag or| No       | commit =             |
+|                   | branch to use,        |          | 'my-app-branch'      |
+|                   | defaulting to         |          |                      |
+|                   | "sdk-*`version`*"     |          |                      |
+|                   |                       |          |                      |
+| config_sh         | Used to select the    | No       | config_sh =          |
+|                   | configuration script  |          | 'autoreconf -fiv &&  |
+|                   |                       |          | sh ./configure'      |
+|                   |                       |          |                      |
+| configure_options | Additional options    | No       | configure_options =  |
+|                   | that should be passed |          | '--enable-something' |
+|                   | to the `configure`    |          |                      |
+|                   | script                |          |                      |
+|                   |                       |          |                      |
+| use_system_libs   | Whether to use system | No       | use_system_libs =    |
+|                   | provided libs         |          | True                 |
+|                   |                       |          |                      |
+| btype             | The build type        | No       | btype =              |
+|                   |                       |          | BuildType.CUSTOM     |
+|                   |                       |          |                      |
+| stype             | The source type       | No       | stype =              |
+|                   |                       |          | SourceType.CUSTOM    |
+|                   |                       |          |                      |
+| files_category    | A list of files that  | Yes      | files_bins =         |
+|                   | should be shipped with|          | ['some-binary']      |
+|                   | packages including    |          | files_libs =         |
+|                   | this recipe *category*|          | ['libsomelib']       |
+|                   | [5]                   |          | files_devel =        |
+|                   |                       |          | ['include/something']|
+|                   |                       |          | files_python =       |
+|                   |                       |          | ['site-packages/     |
+|                   |                       |          | some/pythonfile%(pext|
+|                   |                       |          | )s']                 |
+|                   |                       |          | files_lang = ['foo'] |
+|                   |                       |          |                      |
+| platform_files_   | Same as files_category| No       | platform_files_some_ |
+| category          | but for platform      |          | category =           |
+|                   | specific files        |          | {Platform.LINUX:     |
+|                   |                       |          | ['/some/file']}      |
++-------------------+-----------------------+----------+----------------------+
+
+[1] See cerbero/enums.py:License for allowed licenses
+[2] See cerbero/enums.py:Platform for allowed platforms
+[3] See cerbero/build/build.py:BuildType for allowed build types
+[4] See cerbero/build/source.py:SourceType for allowed source types
+[5] Cerbero comes with some predefined categories that should be used if the
+files being installed match a category criteria. The predefined categories are: `libs` (for libraries), `bins` (for binaries), `devel` (for development files:
+header, pkgconfig files, etc), `python` (for python files) and `lang` (for
+language files). Note that for the `bins` and `libs` categories there is no need
+to specify the files extensions as Cerbero will do it for you.
+```
 
 > ![warning] At least one “files” category should be set.
 
@@ -67,9 +129,8 @@ to do anything before the software is built, or the `install` and
 after installation. Take a look at the existing recipes in
 `cerbero/recipes` for example.
 
-Alternatively, you can pass some options to cerbero-uninstalled so some
-of these attributes are already set for you. For
-example:
+Alternatively, you can pass some options to `cerbero-uninstalled` so some
+of these attributes are already set for you. For example:
 
 ```
 ./cerbero-uninstalled add-recipe --licenses "LGPL" --deps "glib" --origin "git://git.my-app.com" --commit "git-commit-to-use" my-app 1.0
@@ -146,29 +207,76 @@ This will create an initial package file in `packages/my-app.package`.
 
 The following Package attributes are used to describe your package:
 
-| Attribute Name | Description | Required | Example |
-|----------------|-------------|----------|---------|
-| `name` | The package name. | Yes | *name = 'my-app'* |
-| `shortdesc` | A short description of the package. | No | *shortdesc = 'some-short-desc'* |
-| `longdesc` | A long description of the package. | No | *longdesc = 'Some Longer Description'* |
-| `codename` | The release codename. | No | *codename = 'MyAppReleaseName'* |
-| `vendor` | Vendor for this package.| No | *vendor = 'MyCompany'* |
-| `url` | The package url | No | *url = 'http://www.my-app.com'* |
-| `version` | The package version. | Yes | *version = '1.0'* |
-| `license` | The package license (see `cerbero/enums.py:License` for allowed licenses). | Yes | *license = License.LGPLv2Plus* |
-| `uuid` | The package unique id | Yes  | *uuid = '6cd161c2-4535-411f-8287-e8f6a892f853'* |
-| `deps` | A list of package dependencies as package names.  | No | *deps = \['other', 'package', 'names'\]* |
-| `sys_deps` | The system dependencies for this package. | No | *sys\_deps= {Distro.DEBIAN: \['python'\]}* |
-| `files` | A list of files included in the **runtime** package in the form *“recipe\_name:category1:category2:...”* *If the recipe category is omitted, all categories are included.* | Yes\* | *files = \['my-app'\]* *files = \['my-app:category1'\]* |
-| `files_devel` | A list of files included in the **devel** package in the form *“recipe\_name:category1:category2:...”* | Yes\* | *files\_devel = \['my-app:category\_devel'\]* |
-| `platform_files` | Same as *files* but allowing to specify different files for different platforms. | Yes\* | *platform\_files = {Platform.WINDOWS: \['my-app:windows\_only\_category'\]}* |
-| `platform_files_devel` | Same as *files\_devel* but allowing to specify different files for different platforms. | Yes\* | *platform\_files\_devel = {Platform.WINDOWS: \['my-app:windows\_only\_category\_devel'\]}* |
+```
++---------------------+--------------------+----------+------------------------+
+| Attribute Name      | Description        | Required | Example                |
+|---------------------|--------------------|----------|------------------------|
+| name                | The package name   | Yes      | name = 'my-app'        |
+|                     |                    |          |                        |
+| shortdesc           | A short description| No       | shortdesc = 'some-short|
+|                     | of the package     |          | -desc'                 |
+|                     |                    |          |                        |
+| longdesc            | A long description | No       | longdesc = 'Some Longer|
+|                     |                    |          | Description'           |
+|                     |                    |          |                        |
+| codename            | Release codename.  | No       | codename =             |
+|                     |                    |          | 'MyAppReleaseName'     |
+|                     |                    |          |                        |
+| vendor              | Package Vendor     | No       | vendor = 'MyCompany'   |
+|                     |                    |          |                        |
+| url                 | Package URL        | No       | url =                  |
+|                     |                    |          |'http://www.my-app.com' |
+|                     |                    |          |                        |
+| version             | Package version    | Yes      | version = '1.0'        |
+|                     |                    |          |                        |
+| license             | Package license [1]| Yes      | license =              |
+|                     |                    |          | License.LGPLv2Plus     |
+|                     |                    |          |                        |
+| uuid                | Package unique id  | Yes      | uuid =                 |
+|                     |                    |          | '6cd161c2-4535-411f-82'|
+|                     |                    |          |                        |
+| deps                | List of package    | No       | deps = ['other',       |
+|                     | dependencies as    |          | 'package', 'names']    |
+|                     | package names      |          |                        |
+|                     |                    |          |                        |
+| sys_deps            | System dependencies| No       | sys_deps=              |
+|                     | for this package   |          | {Distro.DEBIAN:        |
+|                     |                    |          | ['python']}            |
+|                     |                    |          |                        |
+| files               | A list of files    | Yes      | files = ['my-app']     |
+|                     | included in the    |          | files = ['my-app:      |
+|                     | runtime package in |          | category1']            |
+|                     | the form           |          |                        |
+|                     | "recipe_name:      |          |                        |
+|                     | category1:category2|          |                        |
+|                     | :..." [2]          |          |                        |
+|                     |                    |          |                        |
+| files_devel         | A list of files    | Yes      | files_devel =          |
+|                     | included in the    |          | ['my-app:category_devel|
+|                     | devel package. Same|          | ']                     |
+|                     | format as above    |          |                        |
+|                     |                    |          |                        |
+| platform_files      | Same as *files* but| Yes      | platform_files =       |
+|                     | allowing to specify|          | {Platform.WINDOWS:     |
+|                     | different files for|          | ['my-app:              |
+|                     | different platforms|          | windows_only_category']|
+|                     |                    |          | }                      |
+|                     |                    |          |                        |
+| platform_files_devel| As above but for   | Yes      | platform_files_devel = |
+|                     | files_devel        |          | {Platform.WINDOWS:     |
+|                     |                    |          | ['my-app:windows_only_c|
+|                     |                    |          | ategory_devel']}       |
++---------------------+--------------------+----------+------------------------+
+
+[1] See cerbero/enums.py:License for allowed licenses.
+[2] If the recipe category is omitted, all categories are included.
+
+```
 
 > ![warning] At least one of the “files” attributes should be set.
 
 Alternatively you can also pass some options to `cerbero-uninstalled`,
-for
-example:
+for example:
 
 ``` bash
 ./cerbero-uninstalled add-package my-app 1.0 --license "LGPL" --codename MyApp --vendor MyAppVendor --url "http://www.my-app.com" --files=my-app:bins:libs --files-devel=my-app:devel --platform-files=linux:my-app:linux_specific --platform-files-devel=linux:my-app:linux_specific_devel,windows:my-app:windows_specific_devel --deps base-system --includes gstreamer-core
@@ -198,9 +306,10 @@ class Package(package.Package):
             'libtheora:libs', 'wavpack:libs', 'libvpx:libs',
             'taglib:libs', 'opus:libs', 'libvorbis:libs',
             'openjpeg:libs', 'openh264:libs', 'spandsp:libs',
-            'gst-plugins-base-1.0:plugins_codecs', 'gst-plugins-good-1.0:plugins_codecs',
-            'gst-plugins-bad-1.0:plugins_codecs', 'gst-plugins-ugly-1.0:plugins_codecs',
-            ]
+            'gst-plugins-base-1.0:plugins_codecs',
+            'gst-plugins-good-1.0:plugins_codecs',
+            'gst-plugins-bad-1.0:plugins_codecs',
+            'gst-plugins-ugly-1.0:plugins_codecs']
     files_devel = ['gst-plugins-base-1.0-static:plugins_codecs_devel',
             'gst-plugins-good-1.0-static:plugins_codecs_devel',
             'gst-plugins-bad-1.0-static:plugins_codecs_devel',
@@ -232,7 +341,7 @@ package file like the other package files in GStreamer. Just
 list all packages you need in the `deps` variable and put the files your
 software needs inside the `files` variables. When building a package
 this way you must make sure that you use the same prefix and
-packages\_prefix as the ones in your Cerbero configuration file.
+`packages_prefix` as the ones in your Cerbero configuration file.
 
 Finally, build your package by using:
 

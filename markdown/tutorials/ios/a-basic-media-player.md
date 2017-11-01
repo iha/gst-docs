@@ -5,8 +5,8 @@
 ![screenshot]
 
 Enough testing with synthetic images and audio tones! This tutorial
-finally plays actual media, streamed directly from the Internet, in your
-iOS device. It shows:
+finally shows how to play actual media in your iOS device; media streamed
+directly from the Internet!. We will review:
 
   - How to keep the User Interface regularly updated with the current
     playback position and duration
@@ -91,7 +91,7 @@ Also note that the class has been renamed from `ViewController` to
 
 ## The Video View Controller
 
-The `ViewController `class manages the UI, instantiates
+The `ViewController` class manages the UI, instantiates
 the `GStreamerBackend` and also performs some UI-related tasks on its
 behalf:
 
@@ -390,7 +390,7 @@ To the left of the Seek Bar (refer to the screenshot at the top of this
 page), there is
 a [TextField](https://developer.apple.com/library/ios/#documentation/UIKit/Reference/UITextField_Class/Reference/UITextField.html) widget
 which we will use to display the current position and duration in
-"`HH:mm:ss / HH:mm:ss"` textual format. The `updateTimeWidget` method
+"`HH:mm:ss / HH:mm:ss`" textual format. The `updateTimeWidget` method
 takes care of it, and must be called every time the Seek Bar is
 updated:
 
@@ -446,8 +446,7 @@ the Slider.
 `sliderTouchDown` is called when the user starts dragging. Here we pause
 the pipeline because if the user is searching for a particular scene, we
 do not want it to keep moving. We also mark that a drag operation is in
-progress in the
-`dragging_slider` variable.
+progress in the `dragging_slider` variable.
 
 ```
 /* Called when the time slider position has changed, either because the user dragged it or
@@ -910,16 +909,15 @@ one):
 We first need to obtain a plain `char *` from within the `NSString *` we
 get, using the `UTF8String` method.
 
-`playbin`’s URI is exposed as a common GObject property, so we simply
+`playbin`’s URI is exposed as a common `GObject` property, so we simply
 set it with `g_object_set()`.
 
 ### Reporting media size
 
 Some codecs allow the media size (width and height of the video) to
 change during playback. For simplicity, this tutorial assumes that they
-do not. Therefore, in the READY to PAUSED state change, once the Caps of
-the decoded media are known, we inspect them
-in `check_media_size()`:
+do not. Therefore, in the `READY` to `PAUSED` state change, once the Caps of
+the decoded media are known, we inspect them in `check_media_size()`:
 
 ```
 /* Retrieve the video sink's Caps and tell the application about the media size */
@@ -966,20 +964,19 @@ its `mediaSizeChanged` callback.
 
 ### Refreshing the Seek Bar
 
-To keep the UI updated, a GLib timer is installed in
+To keep the UI updated, a `GLib` timer is installed in
 the `app_function` that fires 4 times per second (or every 250ms),
 right before entering the main loop:
 
 ```
-    /* Register a function that GLib will call 4 times per second */
-    timeout_source = g_timeout_source_new (250);
-    g_source_set_callback (timeout_source, (GSourceFunc)refresh_ui, (__bridge void *)self, NULL);
-    g_source_attach (timeout_source, context);
-    g_source_unref (timeout_source);
+/* Register a function that GLib will call 4 times per second */
+timeout_source = g_timeout_source_new (250);
+g_source_set_callback (timeout_source, (GSourceFunc)refresh_ui, (__bridge void *)self, NULL);
+g_source_attach (timeout_source, context);
+g_source_unref (timeout_source);
 ```
 
-Then, in the refresh\_ui
-method:
+Then, in the `refresh_ui` method:
 
 ```
 /* If we have pipeline and it is running, query the current position and clip duration and inform
@@ -1021,7 +1018,7 @@ need to honor the calls to `setPosition` and instruct the pipeline to
 jump to the indicated position.
 
 There are, though, a couple of caveats. Firstly, seeks are only possible
-when the pipeline is in the PAUSED or PLAYING state, and we might
+when the pipeline is in the `PAUSED` or `PLAYING` state, and we might
 receive seek requests before that happens. Secondly, dragging the Seek
 Bar can generate a very high number of seek requests in a short period
 of time, which is visually useless and will impair responsiveness. Let’s
@@ -1050,17 +1047,17 @@ the `desired_position` variable. Then, in
 the `state_changed_cb()` callback:
 
 ```
-        if (old_state == GST_STATE_READY && new_state == GST_STATE_PAUSED)
-        {
-            check_media_size(self);
+if (old_state == GST_STATE_READY && new_state == GST_STATE_PAUSED)
+{
+    check_media_size(self);
 
-            /* If there was a scheduled seek, perform it now that we have moved to the Paused state */
-            if (GST_CLOCK_TIME_IS_VALID (self->desired_position))
-                execute_seek (self->desired_position, self);
-        }
+    /* If there was a scheduled seek, perform it now that we have moved to the Paused state */
+    if (GST_CLOCK_TIME_IS_VALID (self->desired_position))
+        execute_seek (self->desired_position, self);
+}
 ```
 
-Once the pipeline moves from the READY to the PAUSED state, we check if
+Once the pipeline moves from the `READY` to the `PAUSED` state, we check if
 there is a pending seek operation and execute it.
 The `desired_position` variable is reset inside `execute_seek()`.
 
@@ -1185,7 +1182,7 @@ static void buffering_cb (GstBus *bus, GstMessage *msg, GStreamerBackend *self) 
 
 `target_state` is the state in which we have been instructed to set the
 pipeline, which might be different to the current state, because
-buffering forces us to go to PAUSED. Once buffering is complete we set
+buffering forces us to go to `PAUSED`. Once buffering is complete we set
 the pipeline to the `target_state`.
 
 ## Conclusion

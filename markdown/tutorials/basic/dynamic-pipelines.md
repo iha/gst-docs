@@ -206,25 +206,25 @@ static void pad_added_handler (GstElement *src, GstPad *new_pad, CustomData *dat
 
   /* If our converter is already linked, we have nothing to do here */
   if (gst_pad_is_linked (sink_pad)) {
-    g_print ("  We are already linked. Ignoring.\n");
+    g_print ("We are already linked. Ignoring.\n");
     goto exit;
   }
 
   /* Check the new pad's type */
-  new_pad_caps = gst_pad_query_caps (new_pad, NULL);
+  new_pad_caps = gst_pad_get_current_caps (new_pad);
   new_pad_struct = gst_caps_get_structure (new_pad_caps, 0);
   new_pad_type = gst_structure_get_name (new_pad_struct);
   if (!g_str_has_prefix (new_pad_type, "audio/x-raw")) {
-    g_print ("  It has type '%s' which is not raw audio. Ignoring.\n", new_pad_type);
+    g_print ("It has type '%s' which is not raw audio. Ignoring.\n", new_pad_type);
     goto exit;
   }
 
   /* Attempt the link */
   ret = gst_pad_link (new_pad, sink_pad);
   if (GST_PAD_LINK_FAILED (ret)) {
-    g_print ("  Type is '%s' but link failed.\n", new_pad_type);
+    g_print ("Type is '%s' but link failed.\n", new_pad_type);
   } else {
-    g_print ("  Link succeeded (type '%s').\n", new_pad_type);
+    g_print ("Link succeeded (type '%s').\n", new_pad_type);
   }
 
 exit:
@@ -379,7 +379,7 @@ Now we are going to link the pads directly.
 ``` c
 /* If our converter is already linked, we have nothing to do here */
 if (gst_pad_is_linked (sink_pad)) {
-  g_print ("  We are already linked. Ignoring.\n");
+  g_print ("We are already linked. Ignoring.\n");
   goto exit;
 }
 ```
@@ -390,11 +390,11 @@ trying to link to a new pad once we are already linked.
 
 ``` c
 /* Check the new pad's type */
-new_pad_caps = gst_pad_query_caps (new_pad, NULL);
+new_pad_caps = gst_pad_get_current_caps (new_pad, NULL);
 new_pad_struct = gst_caps_get_structure (new_pad_caps, 0);
 new_pad_type = gst_structure_get_name (new_pad_struct);
 if (!g_str_has_prefix (new_pad_type, "audio/x-raw")) {
-  g_print ("  It has type '%s' which is not raw audio. Ignoring.\n", new_pad_type);
+  g_print ("It has type '%s' which is not raw audio. Ignoring.\n", new_pad_type);
   goto exit;
 }
 ```
@@ -405,10 +405,14 @@ previously created a piece of pipeline which deals with audio (an
 `audioconvert` linked with an `autoaudiosink`), and we will not be able
 to link it to a pad producing video, for example.
 
-`gst_pad_query_caps()` retrieves the *capabilities* of the pad (this is,
-the kind of data it supports), wrapped in a `GstCaps` structure. A pad
-can offer many capabilities, and hence `GstCaps` can contain many
-`GstStructure`, each representing a different capability.
+`gst_pad_get_current_caps()` retrieves the current *capabilities* of the pad
+(that is, the kind of data it currently outputs), wrapped in a `GstCaps`
+structure. All possible caps a pad can support can be queried with
+`gst_pad_query_caps()`. A pad can offer many capabilities, and hence `GstCaps`
+can contain many `GstStructure`, each representing a different capability. The
+current caps on a pad will always have a single `GstStructure` and represent a
+single media format, or if there are no current caps yet `NULL` will be
+returned.
 
 Since, in this case, we know that the pad we want only had one
 capability (audio), we retrieve the first `GstStructure` with
@@ -427,9 +431,9 @@ Otherwise, attempt the link:
 /* Attempt the link */
 ret = gst_pad_link (new_pad, sink_pad);
 if (GST_PAD_LINK_FAILED (ret)) {
-  g_print ("  Type is '%s' but link failed.\n", new_pad_type);
+  g_print ("Type is '%s' but link failed.\n", new_pad_type);
 } else {
-  g_print ("  Link succeeded (type '%s').\n", new_pad_type);
+  g_print ("Link succeeded (type '%s').\n", new_pad_type);
 }
 ```
 

@@ -210,7 +210,6 @@ static void error_cb (GstBus *bus, GstMessage *msg, CustomData *data) {
 
 int main(int argc, char *argv[]) {
   CustomData data;
-  GstPadTemplate *tee_src_pad_template;
   GstPad *tee_audio_pad, *tee_video_pad, *tee_app_pad;
   GstPad *queue_audio_pad, *queue_video_pad, *queue_app_pad;
   GstAudioInfo info;
@@ -280,14 +279,13 @@ int main(int argc, char *argv[]) {
   }
 
   /* Manually link the Tee, which has "Request" pads */
-  tee_src_pad_template = gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS (data.tee), "src_%d");
-  tee_audio_pad = gst_element_request_pad (data.tee, tee_src_pad_template, NULL, NULL);
+  tee_audio_pad = gst_element_get_request_pad (data.tee, "src_%u");
   g_print ("Obtained request pad %s for audio branch.\n", gst_pad_get_name (tee_audio_pad));
   queue_audio_pad = gst_element_get_static_pad (data.audio_queue, "sink");
-  tee_video_pad = gst_element_request_pad (data.tee, tee_src_pad_template, NULL, NULL);
+  tee_video_pad = gst_element_get_request_pad (data.tee, "src_%u");
   g_print ("Obtained request pad %s for video branch.\n", gst_pad_get_name (tee_video_pad));
   queue_video_pad = gst_element_get_static_pad (data.video_queue, "sink");
-  tee_app_pad = gst_element_request_pad (data.tee, tee_src_pad_template, NULL, NULL);
+  tee_app_pad = gst_element_get_request_pad (data.tee, "src_%u");
   g_print ("Obtained request pad %s for app branch.\n", gst_pad_get_name (tee_app_pad));
   queue_app_pad = gst_element_get_static_pad (data.app_queue, "sink");
   if (gst_pad_link (tee_audio_pad, queue_audio_pad) != GST_PAD_LINK_OK ||
@@ -334,7 +332,7 @@ int main(int argc, char *argv[]) {
 >
 > If you need help to compile this code, refer to the **Building the tutorials**  section for your platform: [Linux](installing/on-linux.md#InstallingonLinux-Build), [Mac OS X](installing/on-mac-osx.md#InstallingonMacOSX-Build) or [Windows](installing/on-windows.md#InstallingonWindows-Build), or use this specific command on Linux:
 >
-> `` gcc basic-tutorial-8.c -o basic-tutorial-8 `pkg-config --cflags --libs gstreamer-1.0 gst-audio-1.0` ``
+> `` gcc basic-tutorial-8.c -o basic-tutorial-8 `pkg-config --cflags --libs gstreamer-1.0 gstreamer-audio-1.0` ``
 >
 >If you need help to run this code, refer to the **Running the tutorials** section for your platform: [Linux](installing/on-linux.md#InstallingonLinux-Run), [Mac OS X](installing/on-mac-osx.md#InstallingonMacOSX-Run) or [Windows](installing/on-windows.md#InstallingonWindows-Run).
 >
